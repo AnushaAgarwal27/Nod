@@ -10,3 +10,4 @@ memory/*
 node_modules/
 *.mp4
 *.mov
+.cognee_ids.json
