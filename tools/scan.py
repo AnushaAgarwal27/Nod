@@ -4,12 +4,17 @@ Usage: python tools/scan.py invoiceflow/      # exit 0 = pass, 1 = issues found
 """
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
 from pathlib import Path
 
 from _common import out
+
+# An empty SNYK_TOKEN (the blank line in .env) overrides the `snyk auth` login, so drop it.
+if not os.environ.get("SNYK_TOKEN"):
+    os.environ.pop("SNYK_TOKEN", None)
 
 SECRET = re.compile(r"""(?i)(api[_-]?key|secret|token|password)\s*=\s*["'][^"']{8,}["']""")
 
