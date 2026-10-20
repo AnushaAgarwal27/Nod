@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/anushaagarwal/nod)",
+      "Bash(pwd)",
+      "Bash(.venv/bin/python tools/*)",
+      "Bash(source .venv/bin/activate*)",
+      "Bash(snyk code test*)",
+      "Bash(snyk test*)",
+      "Bash(band *)",
+      "Bash(/Users/anushaagarwal/.local/bin/band *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Read(./**)",
+      "Edit(./invoiceflow/**)",
+      "Edit(./.env.example)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Bash(git push*)"
+    ]
+  }
+}
