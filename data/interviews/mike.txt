@@ -1,0 +1,18 @@
+Interview: Mike Okafor, freelance full-stack developer
+Date: Oct 15
+Contact: mike@okafor.dev, +1 312 555 0199
+
+Q: What tools do you use for invoicing?
+Mike: A mix. Stripe for some clients, bank transfer for others, and I track it all in Notion.
+
+Q: What's the biggest pain?
+Mike: Late payments are my biggest headache. I'll ship a project and then spend hours a month following up. I've literally set phone alarms to remind myself to chase people.
+
+Q: What have you tried?
+Mike: I tried writing a little script to email clients, but it broke and I didn't have time to fix it.
+
+Q: What would help most?
+Mike: Something that just sends the reminder emails on a schedule so I can stop thinking about it. Late payments are my biggest headache, seriously.
+
+Q: Anything about the invoices themselves?
+Mike: Nah, the invoice part is fine. It's the getting-paid part.

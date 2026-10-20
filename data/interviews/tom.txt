@@ -1,0 +1,18 @@
+Interview: Tom Becker, independent strategy consultant
+Date: Oct 20 (Round 2, upload after the restart)
+Contact: tom.becker@beckerconsulting.de, +49 30 5550 1234
+
+Q: How do you invoice?
+Tom: Monthly retainers. Most of my clients are in Germany and the Netherlands, a few in the US.
+
+Q: Have you used tools with automatic payment reminders?
+Tom: Yes, and honestly auto-reminders annoy my clients. My clients are big companies with 60-day payment terms. If a robot emails their finance team on day 7, it looks pushy and it hurts the relationship. I turned it off immediately in the last tool I used.
+
+Q: So no reminders at all?
+Tom: Not by default. Maybe for small clients. It should be my choice per client.
+
+Q: What do you actually need?
+Tom: I need euro invoices. Most of my retainers are in euros and I'm stuck converting by hand. Multi-currency is the thing I'd pay for.
+
+Q: Anything else?
+Tom: Make sure the invoice shows the right currency symbol and VAT line. That matters in Europe.
