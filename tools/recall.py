@@ -16,6 +16,9 @@ DEFAULT_QUESTION = {
 }
 
 
+EMPTY_MEMORY_ERRORS = {"NoDataError", "DatasetNotFoundError", "SearchPreconditionError"}
+
+
 def _json_objects(text):
     """Every JSON object embedded in text (records may sit inside a larger chunk)."""
     decoder = json.JSONDecoder()
@@ -49,7 +52,6 @@ def recall_cognee(query, kind, limit):
     from _cognee import cognee, result_text
     from _cognee import run as _cognee_run
     from cognee import SearchType
-    from cognee.modules.retrieval.exceptions.exceptions import NoDataError
 
     question = query or DEFAULT_QUESTION.get(kind, "What does the team know?")
     datasets = [kind] if kind else None
@@ -61,8 +63,11 @@ def recall_cognee(query, kind, limit):
 
     try:
         answer, chunks = _cognee_run(run)
-    except NoDataError:  # dataset exists but is empty (e.g. everything was forgotten)
-        return {"answer": "", "results": []}
+    except Exception as e:
+        # Empty memory is not an error: nothing stored yet, kind never written, or all forgotten.
+        if {type(e).__name__, getattr(e, "name", None)} & EMPTY_MEMORY_ERRORS:
+            return {"answer": "", "results": []}
+        raise
     forgotten = {e["id"] for e in store_read() if e["forgotten"]}
     records = [r for r in _records_from(chunks, kind) if r.get("_id") not in forgotten][:limit]
     texts = [t for r in answer or [] for t in result_text(r)]

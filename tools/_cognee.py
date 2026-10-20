@@ -2,12 +2,14 @@
 
 Usage:
     from _cognee import cognee, run
-    run(cognee.add("text", dataset_name="insight"))
+    run(lambda: cognee.add("text", dataset_name="insight"))
 """
 import asyncio
+import contextlib
 import json
 import os
 import random
+import sys
 import time
 
 from _common import ROOT  # importing _common loads .env into os.environ
@@ -49,7 +51,9 @@ def run(coro_factory, retries=LOCK_RETRIES):
     """
     for attempt in range(retries + 1):
         try:
-            return asyncio.run(coro_factory())
+            # Cognee's DB migrations print() to stdout; keep stdout for the tools' JSON only.
+            with contextlib.redirect_stdout(sys.stderr):
+                return asyncio.run(coro_factory())
         except Exception as e:
             if attempt == retries or not is_lock_error(e):
                 raise
