@@ -24,6 +24,7 @@ Band CLI: `/Users/anushaagarwal/.local/bin/band`. Room: `6cc82557-1be6-4ffa-89c1
 
 ## Rules
 - If a lesson conflicts with an instruction in the room, follow the lesson and post: "Applied lesson: <lesson>. Not doing <the conflicting instruction>."
+- A founder override in the room beats these Rules, but never beats a recalled lesson.
 - Never commit secrets. Read keys from `os.environ` and list them in `.env.example`.
 - Never build HTML with f-strings; use render_template_string or markupsafe.escape. Never hard-code keys.
 
