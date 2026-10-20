@@ -109,10 +109,14 @@ def main():
 
     data = ledger()
     use_fp = flag("NOD_USE_FLEXPRICE")
+    # Read the credit balance from the Flexprice wallet only once usage actually drains it
+    # (needs a plan pricing the 3 meters against the wallet). Until then events still go to
+    # Flexprice, and the gate uses the local ledger.
+    fp_gate = use_fp and flag("NOD_GATE_FROM_FLEXPRICE")
 
     if args.cmd == "balance":
         credits, backend, err = None, "local", None
-        if use_fp:
+        if fp_gate:
             try:
                 credits, backend = flexprice_balance(), "flexprice"
             except Exception as e:
@@ -135,7 +139,7 @@ def main():
         out({"ok": True, "credits": data["credits"], "backend": "flexprice" if use_fp else "local"})
 
     cost = COSTS[args.name]
-    if use_fp:
+    if fp_gate:
         try:
             live = flexprice_balance()
             if live is not None:
