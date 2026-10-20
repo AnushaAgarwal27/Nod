@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import time
+import uuid
 
 from _common import LEDGER, MEMORY_DIR, fail, flag, out
 
@@ -29,29 +30,71 @@ def save(data):
     LEDGER.write_text(json.dumps(data, indent=2))
 
 
-# --- Flexprice ---
+# --- Flexprice (API ref: docs.flexprice.io/api-reference) ---
+# Base URL: US accounts https://us.api.flexprice.io/v1, India https://api.cloud.flexprice.io/v1
 
-def flexprice_event(name):
-    # TODO(C): check the endpoint and body against the Flexprice docs.
+def _fp(method, path, **kw):
     import requests
 
-    resp = requests.post(
-        f"{os.environ['FLEXPRICE_API_URL']}/events",
-        headers={"x-api-key": os.environ["FLEXPRICE_API_KEY"]},
-        json={
-            "event_name": name,
-            "external_customer_id": os.environ["FLEXPRICE_CUSTOMER_ID"],
-            "properties": {"credits": COSTS[name]},
-            "source": "nod",
-        },
+    resp = requests.request(
+        method,
+        os.environ.get("FLEXPRICE_API_URL", "https://us.api.flexprice.io/v1").rstrip("/") + path,
+        headers={"x-api-key": os.environ["FLEXPRICE_API_KEY"], "Content-Type": "application/json"},
         timeout=10,
+        **kw,
     )
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        raise RuntimeError(f"{method} {path} -> {resp.status_code}: {resp.text[:300]}")
+    return resp.json() if resp.text.strip() else {}
+
+
+def flexprice_event(name):
+    # POST /events -> 202 Accepted (processed async)
+    _fp("POST", "/events", json={
+        "event_name": name,
+        "external_customer_id": os.environ["FLEXPRICE_CUSTOMER_ID"],
+        "event_id": f"nod-{name}-{uuid.uuid4().hex[:12]}",
+        "properties": {"credits": str(COSTS[name])},
+        "source": "nod",
+    })
+
+
+def flexprice_wallet():
+    """The customer's wallet. Set FLEXPRICE_WALLET_ID to skip the lookup."""
+    wid = os.environ.get("FLEXPRICE_WALLET_ID")
+    if wid:
+        return _fp("GET", f"/wallets/{wid}/balance/real-time")
+    ext = os.environ["FLEXPRICE_CUSTOMER_ID"]
+    for key in ("lookup_key", "id"):
+        try:
+            wallets = _fp("GET", "/customers/wallets", params={key: ext, "include_real_time_balance": "true"})
+        except RuntimeError:
+            continue
+        if isinstance(wallets, dict):
+            wallets = wallets.get("items") or wallets.get("wallets") or [wallets]
+        live = [w for w in wallets if w.get("wallet_status", "active") == "active"]
+        if live:
+            return live[0]
+    raise RuntimeError(f"no active wallet for customer {ext}; create one in the dashboard or set FLEXPRICE_WALLET_ID")
 
 
 def flexprice_balance():
-    # TODO(C): read the real wallet balance from Flexprice and return it.
+    w = flexprice_wallet()
+    for field in ("real_time_credit_balance", "credit_balance", "real_time_balance", "balance"):
+        if w.get(field) not in (None, ""):
+            return int(float(w[field]))
     return None
+
+
+def flexprice_topup(amount):
+    w = flexprice_wallet()
+    wid = os.environ.get("FLEXPRICE_WALLET_ID") or w.get("id") or w.get("wallet_id")
+    _fp("POST", f"/wallets/{wid}/top-up", json={
+        "credits_to_add": str(amount),
+        "transaction_reason": "PURCHASED_CREDIT_DIRECT",
+        "description": "Founder top-up approved in Band",
+        "idempotency_key": f"nod-topup-{uuid.uuid4().hex[:12]}",
+    })
 
 
 def main():
@@ -68,17 +111,37 @@ def main():
     use_fp = flag("NOD_USE_FLEXPRICE")
 
     if args.cmd == "balance":
-        credits = flexprice_balance() if use_fp else None
+        credits, backend, err = None, "local", None
+        if use_fp:
+            try:
+                credits, backend = flexprice_balance(), "flexprice"
+            except Exception as e:
+                err = str(e)
         if credits is None:
-            credits = data["credits"]
-        out({"credits": credits}, NO_CREDITS if credits <= 0 else 0)
+            credits, backend = data["credits"], "local"
+        res = {"credits": credits, "backend": backend}
+        if err:
+            res["flexprice_error"] = err
+        out(res, NO_CREDITS if credits <= 0 else 0)
 
     if args.cmd == "topup":
+        if use_fp:
+            try:
+                flexprice_topup(args.amount)
+            except Exception as e:
+                fail(f"flexprice topup: {e}")
         data["credits"] += args.amount
         save(data)
-        out({"ok": True, "credits": data["credits"]})
+        out({"ok": True, "credits": data["credits"], "backend": "flexprice" if use_fp else "local"})
 
     cost = COSTS[args.name]
+    if use_fp:
+        try:
+            live = flexprice_balance()
+            if live is not None:
+                data["credits"] = live  # Flexprice is the source of truth when enabled
+        except Exception:
+            pass
     if data["credits"] < cost:
         out({"ok": False, "error": "out of credits, ask the founder to top up", "credits": data["credits"]}, NO_CREDITS)
     if use_fp:
