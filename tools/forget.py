@@ -9,9 +9,14 @@ from _common import flag, out, store_read, store_write
 
 
 def forget_cognee(entries):
-    # TODO(B): delete the matching data from Cognee (cognee.delete / dataset rebuild),
-    # then re-cognify. Until then, recall_local already hides forgotten entries.
-    pass
+    from uuid import UUID
+
+    from _cognee import cognee, ids_pop, run
+
+    for e in entries:
+        ids = ids_pop(e["kind"], e["id"])
+        if ids:
+            run(lambda: cognee.forget(data_id=UUID(ids["data_id"]), dataset_id=UUID(ids["dataset_id"])))
 
 
 def main():

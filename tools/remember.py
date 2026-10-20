@@ -9,18 +9,16 @@ from _common import KINDS, fail, flag, out, store_append
 
 
 def remember_cognee(kind, record, entry_id):
-    # TODO(B): check against your installed Cognee version.
-    import asyncio
-    import cognee
+    from _cognee import cognee, ids_save, run
 
     # Store the full record (with its id) so recall can rebuild structured records from Cognee.
     text = json.dumps(dict(record, _id=entry_id, _kind=kind))
 
-    async def run():
-        await cognee.add(text, dataset_name=kind)
-        await cognee.cognify(datasets=[kind])
-
-    asyncio.run(run())
+    info = run(lambda: cognee.add(text, dataset_name=kind))
+    # Keep Cognee's data id so forget.py can delete exactly this record.
+    for item in info.data_ingestion_info or []:
+        ids_save(kind, entry_id, item["data_id"], info.dataset_id)
+    run(lambda: cognee.cognify(datasets=[kind]))
 
 
 def main():

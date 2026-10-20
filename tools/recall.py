@@ -16,31 +16,40 @@ DEFAULT_QUESTION = {
 }
 
 
+def _json_objects(text):
+    """Every JSON object embedded in text (records may sit inside a larger chunk)."""
+    decoder = json.JSONDecoder()
+    pos = text.find("{")
+    while pos != -1:
+        try:
+            obj, end = decoder.raw_decode(text, pos)
+            yield obj
+            pos = text.find("{", end)
+        except json.JSONDecodeError:
+            pos = text.find("{", pos + 1)
+
+
 def _records_from(results, kind):
-    """Pull our JSON records back out of whatever shape Cognee returns."""
+    """Pull our JSON records back out of Cognee CHUNKS results (each chunk's "text")."""
+    from _cognee import result_text
+
     records = []
     for r in results or []:
-        blobs = []
-        if isinstance(r, dict):
-            blobs = [r.get("text"), r.get("search_result"), json.dumps(r)]
-        else:
-            blobs = [getattr(r, "text", None), getattr(r, "search_result", None), str(r)]
-        for blob in blobs:
-            for m in re.finditer(r"\{.*?\"_kind\":\s*\"\w+\"\}", str(blob or ""), re.S):
-                try:
-                    rec = json.loads(m.group(0))
-                except json.JSONDecodeError:
+        for item in result_text(r):
+            text = item.get("text") if isinstance(item, dict) else getattr(item, "text", item)
+            for rec in _json_objects(str(text or "")):
+                if not isinstance(rec, dict) or "_kind" not in rec:
                     continue
-                if (not kind or rec.get("_kind") == kind) and rec not in records:
+                if (not kind or rec["_kind"] == kind) and rec not in records:
                     records.append(rec)
     return records
 
 
 def recall_cognee(query, kind, limit):
-    # TODO(B): check against your installed Cognee version (SearchType names, datasets kwarg).
-    import asyncio
-    import cognee
+    from _cognee import cognee, result_text
+    from _cognee import run as _cognee_run
     from cognee import SearchType
+    from cognee.modules.retrieval.exceptions.exceptions import NoDataError
 
     question = query or DEFAULT_QUESTION.get(kind, "What does the team know?")
     datasets = [kind] if kind else None
@@ -50,10 +59,14 @@ def recall_cognee(query, kind, limit):
         chunks = await cognee.search(query_text=question, query_type=SearchType.CHUNKS, datasets=datasets, top_k=max(limit, 20))
         return answer, chunks
 
-    answer, chunks = asyncio.run(run())
+    try:
+        answer, chunks = _cognee_run(run)
+    except NoDataError:  # dataset exists but is empty (e.g. everything was forgotten)
+        return {"answer": "", "results": []}
     forgotten = {e["id"] for e in store_read() if e["forgotten"]}
     records = [r for r in _records_from(chunks, kind) if r.get("_id") not in forgotten][:limit]
-    summary = answer[0] if isinstance(answer, list) and answer else answer
+    texts = [t for r in answer or [] for t in result_text(r)]
+    summary = texts[0] if texts else ""
     return {"answer": summary if isinstance(summary, (str, dict)) else str(summary), "results": records}
 
 
