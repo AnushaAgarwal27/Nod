@@ -11,6 +11,7 @@ Every tool prints JSON to stdout and runs from the repo root.
 | `python tools/remember.py --kind insight\|lesson\|feature --json '<obj>'` | B | `{"ok":true,"kind":...,"id":...}` | 0 |
 | `python tools/recall.py "<query>" [--kind K] [--limit N]` | B | `{"results":[<record>...]}` | 0 |
 | `python tools/forget.py --customer <name> [--topic <word>]` | B | `{"ok":true,"forgotten":N}` | 0 |
+| `python tools/forget.py --id <_id>` | B | `{"ok":true,"forgotten":N}` | 0 |
 | `python tools/scan.py <path>` | C | `{"pass":bool,"issues":[Issue...],"source":"snyk"\|"local"}` | 0 = pass, 1 = issues |
 | `python tools/meter.py event <name>` | C | `{"ok":true,"event":...,"credits":N}` | 0, or 2 if no credits |
 | `python tools/meter.py balance` | C | `{"credits":N}` | 0, or 2 if zero |

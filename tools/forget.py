@@ -1,6 +1,7 @@
 """Forget outdated insights (a customer churned or changed their mind).
 
 Usage: python tools/forget.py --customer Sarah --topic reminders
+       python tools/forget.py --id 3f2a9c1b   (the _id that recall.py returns)
 """
 import argparse
 import json
@@ -21,7 +22,9 @@ def forget_cognee(entries):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--customer", required=True)
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--customer")
+    target.add_argument("--id", dest="entry_id", help="forget one record by its _id")
     parser.add_argument("--topic", help="only forget records mentioning this word")
     args = parser.parse_args()
 
@@ -29,7 +32,11 @@ def main():
     hit = []
     for e in entries:
         rec = e["record"]
-        if e["forgotten"] or str(rec.get("customer", "")).lower() != args.customer.lower():
+        if e["forgotten"]:
+            continue
+        if args.entry_id and e["id"] != args.entry_id:
+            continue
+        if args.customer and str(rec.get("customer", "")).lower() != args.customer.lower():
             continue
         if args.topic and args.topic.lower() not in json.dumps(rec).lower():
             continue
