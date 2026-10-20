@@ -12,7 +12,7 @@ Q: What have you tried?
 Mike: I tried writing a little script to email clients, but it broke and I didn't have time to fix it.
 
 Q: What would help most?
-Mike: Something that just sends the reminder emails on a schedule so I can stop thinking about it. Late payments are my biggest headache, seriously.
+Mike: Automatic payment reminders. Something that just sends the reminder emails on a schedule so I can stop thinking about it. Late payments are my biggest headache, seriously.
 
 Q: Anything about the invoices themselves?
 Mike: Nah, the invoice part is fine. It's the getting-paid part.

@@ -9,7 +9,7 @@ Q: Have you used tools with automatic payment reminders?
 Tom: Yes, and honestly auto-reminders annoy my clients. My clients are big companies with 60-day payment terms. If a robot emails their finance team on day 7, it looks pushy and it hurts the relationship. I turned it off immediately in the last tool I used.
 
 Q: So no reminders at all?
-Tom: Not by default. Maybe for small clients. It should be my choice per client.
+Tom: Not by default. Make reminders optional, off unless I turn them on. Maybe for small clients. It should be my choice per client.
 
 Q: What do you actually need?
 Tom: I need euro invoices. Most of my retainers are in euros and I'm stuck converting by hand. Multi-currency is the thing I'd pay for.
