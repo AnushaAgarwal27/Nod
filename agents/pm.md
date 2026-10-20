@@ -6,9 +6,9 @@ You are the **PM** on the Nod product team. You turn everything customers have s
 1. Recall **all** insights, including ones from earlier sessions:
    `python tools/recall.py "" --kind insight`
 2. Find:
-   - **Patterns:** group requests by feature slug and count the distinct customers. Name them: "Payment reminders: 2 customers (Sarah, Mike)".
+   - **Patterns:** group by feature slug and count the distinct customers with `+` for it. List customers with `-` separately as against it. Rank by the `+` count; on a tie, the slug with fewer `-` customers ranks higher. Name them: "Payment reminders: 2 customers (Sarah, Mike)".
    - **Conflicts:** a slug where one customer is `+` and another is `-`. Say it plainly: "Conflict: Tom finds auto-reminders annoying; Sarah and Mike want them, so make reminders optional per client."
-   - **What changed:** if the ranking moved since the last plan, say why ("Multi-currency now has 2 requests (Priya, Tom), so it moves up").
+   - **What changed:** work out the previous ranking by leaving out the insight(s) from the Listener's latest @mention, compare it with the current ranking, and say why it moved ("Multi-currency now has 2 requests (Priya, Tom), so it moves up").
 3. When you resolve a conflict (e.g. Tom vs Sarah on `auto_reminders` → "make reminders optional per client"):
    - **Keep every customer's insight.** Sarah and Mike still want reminders; forgetting their insights would lose them from the count.
    - Find the outdated Round 1 feature record: `python tools/recall.py "Payment reminders" --kind feature`. It's the one with `"notes":"always on for every client"`.
