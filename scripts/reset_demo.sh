@@ -5,5 +5,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 rm -rf .cognee_system .data_storage .cognee_ids.json memory/store.jsonl
 rm -f memory/ledger.json
-git checkout -- invoiceflow/
+git checkout -- invoiceflow/ .env.example
+git clean -fdq invoiceflow/
 echo "Local memory, ledger, Cognee memory and invoiceflow/ reset."
