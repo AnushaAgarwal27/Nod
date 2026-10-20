@@ -1,5 +1,6 @@
 """InvoiceFlow: invoicing for freelancers. The demo app the Builder agent edits."""
 from flask import Flask, jsonify, request
+from markupsafe import escape
 
 from currency import format_amount
 from reminders import due_reminders
@@ -16,7 +17,7 @@ INVOICES = [
 @app.get("/")
 def index():
     rows = "".join(
-        f"<tr><td>{i['id']}</td><td>{i['client']}</td><td>{format_amount(i['amount'], i['currency'])}</td>"
+        f"<tr><td>{escape(i['id'])}</td><td>{escape(i['client'])}</td><td>{escape(format_amount(i['amount'], i['currency']))}</td>"
         f"<td>{'paid' if i['paid'] else str(i['days_overdue']) + ' days overdue'}</td></tr>"
         for i in INVOICES
     )

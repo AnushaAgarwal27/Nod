@@ -8,13 +8,16 @@ import json
 from _common import KINDS, fail, flag, out, store_append
 
 
-def remember_cognee(kind, record):
+def remember_cognee(kind, record, entry_id):
     # TODO(B): check against your installed Cognee version.
     import asyncio
     import cognee
 
+    # Store the full record (with its id) so recall can rebuild structured records from Cognee.
+    text = json.dumps(dict(record, _id=entry_id, _kind=kind))
+
     async def run():
-        await cognee.add(json.dumps(record), dataset_name=kind)
+        await cognee.add(text, dataset_name=kind)
         await cognee.cognify(datasets=[kind])
 
     asyncio.run(run())
@@ -35,7 +38,7 @@ def main():
     entry = store_append(args.kind, record)
     backend = "local"
     if flag("NOD_USE_COGNEE"):
-        remember_cognee(args.kind, record)
+        remember_cognee(args.kind, record, entry["id"])
         backend = "cognee"
 
     out({"ok": True, "kind": args.kind, "id": entry["id"], "backend": backend})

@@ -10,7 +10,8 @@ import sys
 PATTERNS = {
     "email": (re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+"), "[EMAIL]"),
     "card": (re.compile(r"\b(?:\d[ -]?){13,16}\b"), "[CARD]"),
-    "phone": (re.compile(r"(?:\+?\d{1,3}[ .-]?)?\(?\d{3}\)?[ .-]?\d{3}[ .-]?\d{4}\b"), "[PHONE]"),
+    # International first (+49 30 5550 1234, +44 20 7946 0958), then US formats.
+    "phone": (re.compile(r"\+\d{1,3}(?:[ .-]?\d{1,4}){2,5}\b|(?:\+?\d{1,3}[ .-]?)?\(?\d{3}\)?[ .-]?\d{3}[ .-]?\d{4}\b"), "[PHONE]"),
     "iban": (re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){3,7}\b"), "[IBAN]"),
 }
 

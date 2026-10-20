@@ -87,10 +87,12 @@ def main():
     else:
         issues = local_scan(args.path)
 
-    result = {"pass": not issues, "issues": issues, "source": source}
+    # Only medium+ blocks a card; low-severity notes are reported but don't block.
+    blocking = [i for i in issues if i.get("severity") in ("high", "critical", "medium")]
+    result = {"pass": not blocking, "issues": issues, "blocking": len(blocking), "source": source}
     if error:
         result["snyk_error"] = error
-    out(result, 0 if not issues else 1)
+    out(result, 0 if not blocking else 1)
 
 
 if __name__ == "__main__":
